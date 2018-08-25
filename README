@@ -1,0 +1,10 @@
+特征工程
+item_category_list：
+    a) 找出训练集中目录最长的那个，如果改目录下的条数多则取该目录长度为最长目录，否则根据分布剪枝。
+    b) 每一级目录做one-label，然后one-hot，所有的目录最后concat起来。
+
+item_property_list：
+    直接使用one-hot相加
+
+predict_category_property：
+    结合item_category_list、item_property_list，父目录、子目录分布分别、one-label, one-hot相加然后concat
