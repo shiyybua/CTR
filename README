@@ -8,3 +8,15 @@ item_property_list：
 
 predict_category_property：
     结合item_category_list、item_property_list，父目录、子目录分布分别、one-label, one-hot相加然后concat
+
+
+max item length: 3, max cnt: 16,
+2 - 3:  476109
+3 - 666666:  2029
+max item length: 100, max cnt: 61407,
+3 - 666666:  478138
+max item length: 14, max category cnt: 1031, max property cnt: 2077
+1 - 9:  463594
+9 - 13:  14525
+13 - 14:  18
+14 - 666666:  1

@@ -7,23 +7,6 @@ def read_data_from_csv():
     return data
 
 
-def get_max_category_num(data, column_name, delimiter):
-    max_item_num = 0
-    for item in data[column_name]:
-        items = item.split(delimiter)
-        cur_len = len(items)
-        max_item_num = cur_len if cur_len > max_item_num else max_item_num
-
-    print(max_item_num)
-
-
-def get_max_category_cnt(data, column_name):
-    container = set()
-    for item in data[column_name]:
-        container.add(item)
-    return len(container)
-
-
 def feature_one_hot_encode(data, column_name):
     container = set()
     for item in data[column_name]:
