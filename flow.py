@@ -11,7 +11,8 @@ if __name__ == '__main__':
     data = preprocess.read_data_from_csv()
     # 这种类型的用one-hot求和的方式去做。
     data = process_features.process_item_category_list(data)
-    print(data)
+    data = process_features.item_property_list(data)
+    process_features.process_predict_category_property(data)
 
 
 

@@ -1,18 +1,56 @@
 from config import *
+import pandas as pd
+from collections import defaultdict
 
 
-def _one_hot():
+def _one_hot(column):
     '''
-    部分数据量级较大，sklearn不在支持。
+    部分数据量级较大，sklearn不支持，自定义one hot
+    :return: 
+    '''
+    num_col = len(set(column))
+    cur_position = 0
+    feature_position = {}
+    one_hot_result = []
+    for e in column:
+        one_hot_encoder = [0] * num_col
+        if e not in feature_position.keys():
+            one_hot_encoder[cur_position] = 1
+            one_hot_result.append(one_hot_encoder)
+            feature_position[e] = cur_position
+            cur_position += 1
+        else:
+            one_hot_encoder[feature_position.get(e)] = 1
+            one_hot_result.append(one_hot_encoder)
+    return one_hot_result, feature_position
+
+
+def _multi_column_one_hot(all_items):
+    '''
+        针对多行做one-hot
     :return: 
     '''
     pass
 
 
+def _concat_two_one_hot(element_1, element_2):
+    merge = []
+    one_hot_length = 0
+    assert len(element_1) == len(element_2)
+    for e1, e2 in zip(element_1, element_2):
+        merge.append(e1 + e2)
+        one_hot_length = len(merge[0])
+    return merge, one_hot_length
+
+
 def process_item_category_list(data):
+    '''
+    one-hot 处理，根据事前的分布决定只取前2个category
+    :param data: 
+    :return: 
+    '''
     category_0 = []
     category_1 = []
-    enc = OneHotEncoder()
     for item in data['item_category_list']:
         items = item.split(";")
         category_0.append(int(items[0]))
@@ -21,17 +59,46 @@ def process_item_category_list(data):
         else:
             category_1.append(-1)
     del data['item_category_list']
-    print(len(set(category_1)))
-    # one_hot_category_0 = enc.fit_transform(category_0)
-    # one_hot_category_1 = enc.fit_transform(category_1)
-    # print(one_hot_category_0)
+    one_hot_category_0, _ = _one_hot(category_0)
+    one_hot_category_1, _ = _one_hot(category_1)
+    concat_one_hots, one_hot_length = _concat_two_one_hot(one_hot_category_0, one_hot_category_1)
+    item_category_list_one_hots = pd.DataFrame(concat_one_hots,
+                                               columns=['item_category_list_%d' % i for i in range(one_hot_length)])
+    data = pd.concat([data, item_category_list_one_hots], axis=1)
 
-    return
+    return data
+
+
+def item_property_list(data):
+    '''
+        直接使用one-hot相加
+    :param data: 
+    :return: 
+    '''
+    properties = []
+    for item in data['item_property_list']:
+        items = item.split(";")
+        properties += items
+    _, feature_position = _one_hot(properties)
+    data_one_hot = []
+    for item in data['item_property_list']:
+        one_hot_model = [0] * len(feature_position)
+        items = item.split(";")
+        for e in items:
+            one_hot_model[feature_position.get(e)] = 1
+        data_one_hot.append(one_hot_model)
+
+    del data['item_property_list']
+    item_property_list_one_hots = pd.DataFrame(data_one_hot,
+                                               columns=['item_property_list%d' % i for i in range(len(feature_position))])
+    data = pd.concat([data, item_property_list_one_hots], axis=1)
+    return data
 
 
 def process_predict_category_property(data):
     MAX_CATEGORY_NUM = 8
     category_properties = [None] * 8
+    category_to_properties = defaultdict(set)
     categories = []
     for item in data['predict_category_property']:
         items = item.split(";")
@@ -39,11 +106,17 @@ def process_predict_category_property(data):
             if i > MAX_CATEGORY_NUM:
                 break
             content = element.split(":")
-            try:
-                category, properties = content[0], content[1]
-                categories.append(category)
-                for e in properties.split(','):
-                    pass
-            except IndexError:
-                pass
+            category, properties = content[0], content[1]
+            categories.append(category)
+            for e in properties.split(','):
+                category_to_properties[category].add(e)
 
+    one_hot_category, _ = _one_hot(categories)
+
+
+
+    print(category_to_properties)
+
+
+if __name__ == '__main__':
+    print(_one_hot([1,2,3,1]))
