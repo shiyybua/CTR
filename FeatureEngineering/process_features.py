@@ -1,6 +1,7 @@
 from config import *
 import pandas as pd
 from collections import defaultdict
+import numpy as np
 
 
 def _one_hot(column):
@@ -114,8 +115,24 @@ def process_predict_category_property(data):
     one_hot_category, _ = _one_hot(categories)
 
 
+def category_more_features_embedding(data):
+    '''
+    建立、初始化embedding。
+    :param data: 
+    :return: 
+    '''
+    feature_embedding = {}
+    for feature in category_more_features:
+        category_feature = data[feature]
+        category_feature = np.asarray(category_feature)
+        feature_size = len(set(category_feature))
+        embeddings = np.random.uniform(0, 1, (feature_size, category_more_features_embedding_size))
 
-    print(category_to_properties)
+        feature_embedding[feature] = tf.get_variable("%s_embeddings" % feature, dtype=tf.float32,
+                               shape=[feature_size, category_more_features_embedding_size],
+                               initializer=tf.constant_initializer(embeddings), trainable=True)
+
+    return feature_embedding
 
 
 if __name__ == '__main__':
