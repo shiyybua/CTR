@@ -1,5 +1,6 @@
 from FeatureEngineering import preprocess, statistic, process_features
-import numpy as np
+from Utils import uilt
+from config import *
 
 
 def _statistic():
@@ -13,10 +14,16 @@ if __name__ == '__main__':
     # 这种类型的用one-hot求和的方式去做。
     data = process_features.process_item_category_list(data)
     data = process_features.item_property_list(data)
-    process_features.category_more_features_embedding(data)
+    category_features_embedding = process_features.category_features_embedding(data, category_more_features,
+                                                      category_more_features_embedding_size)
+    category_less_features_embedding = process_features.category_features_embedding(data, category_less_features,
+                                                      category_less_features_embedding_size)
+    # dict: key是feature name，value是对应的embedding(shape=[feature_size, embedding_size])
+    category_features_embedding.update(category_less_features_embedding)
+    data = process_features.remove_used_feature(data)
+    data = process_features.continuous_features_normalization(data)
+    uilt.save_dataframe_to_dick(data)
 
-    # print(np.asarray(data))
-    # process_features.process_predict_category_property(data)
 
 
 

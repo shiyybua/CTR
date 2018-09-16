@@ -1,5 +1,5 @@
-from sklearn.preprocessing import OneHotEncoder
+a = {1:2, 2:3}
+b = {3:4, 4:5}
 
-enc = OneHotEncoder()
-ret = enc.fit_transform([[1], [2], [3], [1]])
-print(ret.toarray())
+a.update(b)
+print(a)

@@ -115,25 +115,53 @@ def process_predict_category_property(data):
     one_hot_category, _ = _one_hot(categories)
 
 
-def category_more_features_embedding(data):
+def category_features_embedding(data, embedding_features, embedding_size):
     '''
     建立、初始化embedding。
     :param data: 
     :return: 
     '''
     feature_embedding = {}
-    for feature in category_more_features:
+    for feature in embedding_features:
         category_feature = data[feature]
         category_feature = np.asarray(category_feature)
         feature_size = len(set(category_feature))
-        embeddings = np.random.uniform(0, 1, (feature_size, category_more_features_embedding_size))
+        embeddings = np.random.uniform(0, 1, (feature_size, embedding_size))
 
         feature_embedding[feature] = tf.get_variable("%s_embeddings" % feature, dtype=tf.float32,
-                               shape=[feature_size, category_more_features_embedding_size],
+                               shape=[feature_size, embedding_size],
                                initializer=tf.constant_initializer(embeddings), trainable=True)
 
     return feature_embedding
 
 
+def continuous_features_normalization(data):
+    '''
+    连续型变量normalization
+    :param data: 
+    :return: 
+    '''
+    def sigmoid(x):
+        return 1 / (1 + np.exp(-x))
+
+    def avg(x, max, min):
+        assert (max != min)
+        return (x - min) / (max - min)
+
+    for feature in continuous_features:
+        data[feature] = data[feature].apply(avg, **{'max':data[feature].max(), 'min':data[feature].min()})
+
+    return data
+
+
+def remove_used_feature(data):
+    remove_features = category_more_features + category_less_features + never_used_feature
+    for feature in remove_features:
+        data.pop(feature)
+
+    return data
+
+
 if __name__ == '__main__':
+    category_features_embedding(_, category_more_features, category_more_features_embedding_size)
     print(_one_hot([1,2,3,1]))
